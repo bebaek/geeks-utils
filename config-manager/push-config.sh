@@ -1,5 +1,6 @@
 #!/bin/bash
-# Push spacemacs config to share dir.
+# Push package config file to share dir
+
 script="${0##*/}"
 conf="paths.conf"
 
