@@ -1,2 +1,2 @@
-# geeks-utils
-Script utilities for setting up geek's PC
+# workstation-tools
+Useful scripts for setting up a workstation.
