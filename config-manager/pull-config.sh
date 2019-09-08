@@ -1,19 +1,10 @@
 #!/bin/bash
-# Pull spacemacs config from repo.
+# Pull package config file from share dir
 
-local="$HOME/.spacemacs"
-share="./data/_spacemacs"
+# Process args
+. proc-args.sh
+
 backup="$local.bak"
-
-# Warn about the security consequence
-echo "Warning: This copies $share to $local. Make sure no malicious code is \
-contained in $share."
-
-# Check working directory
-if [ ! -f "${0##*/}" ]; then
-    echo Run "${0}" in its directory. Exiting...
-    exit 1
-fi
 
 # Backup
 if [ -f "$local" ]; then
