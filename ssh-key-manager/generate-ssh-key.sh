@@ -11,5 +11,5 @@ if [ -f $default_file ]; then
 fi
 
 # Generate key
-read -p "Comment to insert? " COMMENT
-ssh-keygen -t rsa -b 4096 -C "$COMMENT"
+read -p "Comment to insert? " comment
+ssh-keygen -t rsa -b 4096 -C "$comment"
