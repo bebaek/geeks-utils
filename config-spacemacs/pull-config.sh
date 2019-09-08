@@ -11,7 +11,7 @@ contained in $share."
 
 # Check working directory
 if [ ! -f "${0##*/}" ]; then
-    echo Run "${0}" in its directory. Exitting...
+    echo Run "${0}" in its directory. Exiting...
     exit 1
 fi
 
