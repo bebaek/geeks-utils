@@ -2,7 +2,7 @@
 # Push package config file to share dir
 
 # Process args
-. proc-args.sh
+. util/proc-args.sh
 
 backup="$share.bak"
 

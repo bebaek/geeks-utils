@@ -2,7 +2,7 @@
 # Pull package config file from share dir
 
 # Process args
-. proc-args.sh
+. util/proc-args.sh
 
 backup="$local.bak"
 
