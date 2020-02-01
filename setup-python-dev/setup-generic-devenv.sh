@@ -1,6 +1,5 @@
 #!/bin/bash
 # Set up generic Python development environment based on the standard venv.
-# Another option is 
 
 echo Start: set up generic Python environment.
 
