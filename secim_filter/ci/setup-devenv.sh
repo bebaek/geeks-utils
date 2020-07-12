@@ -40,5 +40,5 @@ echo "Runnning local setup.py..."
 pip install -e .
 echo
 
-echo End: set up Python environment. Start with activating the venv by
-echo      . ~/_venv/secim_filter/bin/activate
+echo "End: set up Python environment. Start with activating the venv by"
+echo "     . ~/_venv/secim_filter/bin/activate"
