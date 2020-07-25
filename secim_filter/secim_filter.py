@@ -1,5 +1,6 @@
 import argparse
 from datetime import datetime, timedelta
+import os
 from pathlib import Path
 import re
 import time
@@ -16,6 +17,8 @@ MODEL_PATH = HERE / Path('data/detect.tflite')
 LABEL_PATH = HERE / Path('data/labelmap.txt')
 THRESHOLD = 0.4
 MIN_NUM_OBJECTS = 1
+TARGET_OBJECTS = ['person']
+DEBUG = bool(os.environ.get('DEBUG', False))
 
 
 def secim_filter(
@@ -25,7 +28,6 @@ def secim_filter(
         model_path=MODEL_PATH,
         label_path=LABEL_PATH, threshold=THRESHOLD,
         min_num_objects=MIN_NUM_OBJECTS,
-        show_inference_duration=False,
 ):
     """Filter images and copy only useful ones."""
 
@@ -40,6 +42,10 @@ def secim_filter(
         interpreter.get_input_details()[0]['shape']
     )
 
+    # Get target object ids
+    target_ids = [
+        id_ for id_, label in labels.items() if label in TARGET_OBJECTS]
+
     # Iterate over images
     for img_path in img_paths:
         # Read and infer from image
@@ -49,10 +55,20 @@ def secim_filter(
         start_time = time.monotonic()
         results = _detect_objects(interpreter, image, threshold)
         elapsed_ms = (time.monotonic() - start_time) * 1000
-        if show_inference_duration:
+        if DEBUG:
             print(elapsed_ms)
 
+        # Check if anything was detected
         if len(results) < min_num_objects:
+            continue
+
+        # Check if any of the targets was detected
+        detected = False
+        for obj in results:
+            if obj['class_id'] in target_ids:
+                detected = True
+                break
+        if not detected:
             continue
 
         # Overlay resulting info
