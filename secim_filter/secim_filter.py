@@ -17,7 +17,6 @@ MODEL_PATH = HERE / Path('data/detect.tflite')
 LABEL_PATH = HERE / Path('data/labelmap.txt')
 THRESHOLD = 0.4
 MIN_NUM_OBJECTS = 1
-TARGET_OBJECTS = ['person']
 DEBUG = bool(os.environ.get('DEBUG', False))
 
 
@@ -28,6 +27,7 @@ def secim_filter(
         model_path=MODEL_PATH,
         label_path=LABEL_PATH, threshold=THRESHOLD,
         min_num_objects=MIN_NUM_OBJECTS,
+        crop_fractions=(0.4, 0.4, 1, 0.8),
 ):
     """Filter images and copy only useful ones."""
 
@@ -42,15 +42,14 @@ def secim_filter(
         interpreter.get_input_details()[0]['shape']
     )
 
-    # Get target object ids
-    target_ids = [
-        id_ for id_, label in labels.items() if label in TARGET_OBJECTS]
-
     # Iterate over images
     for img_path in img_paths:
-        # Read and infer from image
+        # Read and crop image
         orig_image = Image.open(img_path)
-        image = orig_image.convert('RGB').resize(
+        image = _crop_image(orig_image, crop_fractions)
+
+        # Transform image and infer
+        image = image.convert('RGB').resize(
             (input_width, input_height), Image.ANTIALIAS)
         start_time = time.monotonic()
         results = _detect_objects(interpreter, image, threshold)
@@ -62,18 +61,17 @@ def secim_filter(
         if len(results) < min_num_objects:
             continue
 
-        # Check if any of the targets was detected
-        detected = False
-        for obj in results:
-            if obj['class_id'] in target_ids:
-                detected = True
-                break
-        if not detected:
+        # Custom filters
+        results = _filter_by_class(results, labels, excluded=['potted plant'])
+        if not results:
             continue
 
         # Overlay resulting info
         for obj in results:
             ymin, xmin, ymax, xmax = obj['bounding_box']
+            xmin, ymin, xmax, ymax = _get_uncropped_coords(
+                xmin, ymin, xmax, ymax, crop_fractions)
+
             _draw_boxes(orig_image, ymin, xmin, ymax, xmax,
                         label=labels[obj['class_id']])
 
@@ -118,6 +116,16 @@ def _load_labels(path):
     return labels
 
 
+def _crop_image(image, crop_fractions):
+    left, upper, right, lower = crop_fractions
+    width, height = image.size
+    left = round(left * width)
+    right = round(right * width)
+    upper = round(upper * height)
+    lower = round(lower * height)
+    return image.crop((left, upper, right, lower))
+
+
 def _detect_objects(interpreter, image, threshold):
     """Returns a list of detection results, each a dictionary of object info.
     """
@@ -156,11 +164,30 @@ def _get_output_tensor(interpreter, index):
     return tensor
 
 
+def _filter_by_class(results, labels, excluded=[]):
+    new_results = []
+    for obj in results:
+        if labels[obj['class_id']] not in excluded:
+            new_results.append(obj)
+    return new_results
+
+
 def _get_out_path(in_path, out_root):
     out_root = Path(out_root)
     out_dir = out_root / in_path.parent.name
     out_dir.mkdir(parents=True, exist_ok=True)
     return out_dir / in_path.name
+
+
+def _get_uncropped_coords(left, upper, right, lower, crop_fractions):
+    c_left, c_upper, c_right, c_lower = crop_fractions
+    c_width = c_right - c_left
+    c_height = c_lower - c_upper
+    left = c_left + left * c_width
+    right = c_left + right * c_width
+    upper = c_upper + upper * c_height
+    lower = c_upper + lower * c_height
+    return left, upper, right, lower
 
 
 def _draw_boxes(image, ymin, xmin, ymax, xmax, label=''):
