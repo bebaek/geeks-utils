@@ -40,12 +40,18 @@ Optional pip packages:
 To see the usage, run the script with `--help` option:
 
     $ python secim_filter.py --help
-    usage: secim_filter.py [-h] input_path output_path last_minutes
+    usage: secim_filter.py [-h] [--last-minutes LAST_MINUTES]
+                           [--negative-output-dir NEGATIVE_OUTPUT_DIR]
+                           input_dir output_dir
 
     positional arguments:
-      input_path    input image root directory
-      output_path   output image root directory
-      last_minutes  last minutes to look
+      input_dir             input image root directory
+      output_dir            output image root directory
 
     optional arguments:
-      -h, --help    show this help message and exit
+      -h, --help            show this help message and exit
+      --last-minutes LAST_MINUTES
+                            last minutes to look
+      --negative-output-dir NEGATIVE_OUTPUT_DIR
+                            negative output image root directory
+
