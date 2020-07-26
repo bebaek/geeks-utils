@@ -26,9 +26,12 @@ def secim_filter(
         last_minutes=None,
         neg_out_dir=None,
         model_path=MODEL_PATH,
-        label_path=LABEL_PATH, threshold=THRESHOLD,
+        label_path=LABEL_PATH,
+        threshold=THRESHOLD,
         min_num_objects=MIN_NUM_OBJECTS,
         crop_fractions=(0.4, 0.3, 1, 0.8),
+        excluded_labels=['airplane', 'fire', 'horse', 'bench', 'potted',
+                         'bicycle', 'cow'],
 ):
     """Filter images and copy only useful ones."""
 
@@ -59,7 +62,7 @@ def secim_filter(
             print(elapsed_ms)
 
         # Custom filters
-        results = _filter_by_class(results, labels, excluded=['potted plant'])
+        results = _filter_by_class(results, labels, excluded=excluded_labels)
 
         # Check if anything was detected
         if len(results) < min_num_objects or not results:
@@ -78,7 +81,7 @@ def secim_filter(
                 xmin, ymin, xmax, ymax, crop_fractions)
 
             _draw_boxes(orig_image, ymin, xmin, ymax, xmax,
-                        label=labels[obj['class_id']])
+                        label=labels[obj['class_id']], score=obj['score'])
 
         # Save
         out_path = _get_out_path(img_path, out_dir, last_minutes)
@@ -196,7 +199,7 @@ def _get_uncropped_coords(left, upper, right, lower, crop_fractions):
     return left, upper, right, lower
 
 
-def _draw_boxes(image, ymin, xmin, ymax, xmax, label=''):
+def _draw_boxes(image, ymin, xmin, ymax, xmax, label='', score=0):
     draw = ImageDraw.Draw(image)
     ymin = int(ymin * image.height)
     xmin = int(xmin * image.width)
@@ -205,7 +208,7 @@ def _draw_boxes(image, ymin, xmin, ymax, xmax, label=''):
     draw.rectangle((xmin, ymin, xmax, ymax), outline=128, width=2)
 
     if label:
-        draw.text((xmin, ymin), label)
+        draw.text((xmin, ymin), f'{label} {round(score * 100)}%')
 
 
 def main():
@@ -213,7 +216,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('input_dir', help='input image root directory')
     parser.add_argument('output_dir', help='output image root directory')
-    parser.add_argument('--last-minutes', type=int,
+    parser.add_argument('--last-minutes', type=float,
                         help='last minutes to look')
     parser.add_argument('--negative-output-dir',
                         help='negative output image root directory')
