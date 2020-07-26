@@ -32,7 +32,7 @@ def secim_filter(
     """Filter images and copy only useful ones."""
 
     # Get recent image paths to process
-    img_paths = _find_recent_images(in_dir, last_minutes)
+    img_paths = _search_images(in_dir, last_minutes)
 
     # Get labels and model
     labels = _load_labels(label_path)
@@ -76,19 +76,20 @@ def secim_filter(
                         label=labels[obj['class_id']])
 
         # Save
-        out_path = _get_out_path(img_path, out_dir)
+        out_path = _get_out_path(img_path, out_dir, last_minutes)
         orig_image.save(out_path, 'JPEG')
 
 
-def _find_recent_images(root_path, last_minutes, time_by='name'):
-    if time_by != 'name':
-        raise NotImplementedError
-
-    now = datetime.now()
-    delta = timedelta(minutes=last_minutes)
-
+def _search_images(root_path, last_minutes=None):
     root_path = Path(root_path)
     all_paths = root_path.glob('**/*.jpg')
+
+    if last_minutes is None:
+        return list(all_paths)
+
+    # Filter by time encoded in the paths
+    now = datetime.now()
+    delta = timedelta(minutes=last_minutes)
     paths_out = []
     for path in all_paths:
         date_str = str(path.parent.name)
@@ -97,7 +98,6 @@ def _find_recent_images(root_path, last_minutes, time_by='name'):
         dt = datetime.fromisoformat(datetime_str)
         if now - dt < delta:
             paths_out.append(path)
-
     return paths_out
 
 
@@ -172,9 +172,10 @@ def _filter_by_class(results, labels, excluded=[]):
     return new_results
 
 
-def _get_out_path(in_path, out_root):
+def _get_out_path(in_path, out_root, last_minutes):
     out_root = Path(out_root)
-    out_dir = out_root / in_path.parent.name
+    out_dir = out_root if last_minutes is None else (
+        out_root / in_path.parent.name)
     out_dir.mkdir(parents=True, exist_ok=True)
     return out_dir / in_path.name
 
@@ -207,7 +208,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('input_dir', help='input image root directory')
     parser.add_argument('output_dir', help='output image root directory')
-    parser.add_argument('last_minutes', type=int, help='last minutes to look')
+    parser.add_argument('--last-minutes', type=int,
+                        help='last minutes to look')
     args = parser.parse_args()
 
     secim_filter(args.input_dir, args.output_dir, args.last_minutes)
