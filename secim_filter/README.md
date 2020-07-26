@@ -5,35 +5,35 @@ object.
 
 ## Prerequisites
 
-- Python 3.6 or higher. For example, install by:
+Python 3.6 or higher. For example, install by:
 
-      sudo apt install python3
+    sudo apt install python3 [python3-dev]
     
-- Use virtual environment if you are not sure:
+Use virtual environment if you are not sure:
 
-      sudo apt install python3-venv
-      python3 -m venv ~/_venv/tf2
-      source ~/_venv/tf2/bin/activate
-      pip install -U pip wheel
+    sudo apt install python3-venv
+    python3 -m venv ~/_venv/tf2
+    source ~/_venv/tf2/bin/activate
+    pip install -U pip wheel
     
-- (On x86 platform) Tensorflow 2. For example, install by:
+On x86 platform for dev, Tensorflow 2. For example, install by:
 
-      source ~/_venv/tf2/bin/activate
-      pip install tensorflow
+    source ~/_venv/tf2/bin/activate
+    pip install tensorflow
     
-- (On raspbian) Tensorflow lite 2 runtime. Download platform-specific
+On raspbian, Tensorflow lite 2 runtime. Download platform-specific
 wheel from the [tensorflow lite guide](https://www.tensorflow.org/lite/guide/python)
 and install by:
 
-      pip install <downloaded .whl>
+    pip install <downloaded .whl>
     
-- Other python packages:
+Other python packages:
 
-      pip install Pillow
+    pip install Pillow
     
-- Optional pip packages:
+Optional pip packages:
 
-      pip install flake8
+    pip install flake8
     
 ## Usage
 
