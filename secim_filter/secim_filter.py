@@ -23,11 +23,12 @@ DEBUG = bool(os.environ.get('DEBUG', False))
 def secim_filter(
         in_dir,
         out_dir,
-        last_minutes,
+        last_minutes=None,
+        neg_out_dir=None,
         model_path=MODEL_PATH,
         label_path=LABEL_PATH, threshold=THRESHOLD,
         min_num_objects=MIN_NUM_OBJECTS,
-        crop_fractions=(0.4, 0.4, 1, 0.8),
+        crop_fractions=(0.4, 0.3, 1, 0.8),
 ):
     """Filter images and copy only useful ones."""
 
@@ -57,13 +58,17 @@ def secim_filter(
         if DEBUG:
             print(elapsed_ms)
 
-        # Check if anything was detected
-        if len(results) < min_num_objects:
-            continue
-
         # Custom filters
         results = _filter_by_class(results, labels, excluded=['potted plant'])
-        if not results:
+
+        # Check if anything was detected
+        if len(results) < min_num_objects or not results:
+            if DEBUG:
+                print('No object detected.')
+            # Save negative image if needed
+            if neg_out_dir is not None:
+                out_path = _get_out_path(img_path, neg_out_dir, last_minutes)
+                orig_image.save(out_path, 'JPEG')
             continue
 
         # Overlay resulting info
@@ -210,9 +215,12 @@ def main():
     parser.add_argument('output_dir', help='output image root directory')
     parser.add_argument('--last-minutes', type=int,
                         help='last minutes to look')
+    parser.add_argument('--negative-output-dir',
+                        help='negative output image root directory')
     args = parser.parse_args()
 
-    secim_filter(args.input_dir, args.output_dir, args.last_minutes)
+    secim_filter(args.input_dir, args.output_dir, args.last_minutes,
+                 args.negative_output_dir)
 
 
 if __name__ == '__main__':
