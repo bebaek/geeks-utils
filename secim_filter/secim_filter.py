@@ -29,7 +29,7 @@ def secim_filter(
         label_path=LABEL_PATH,
         threshold=THRESHOLD,
         min_num_objects=MIN_NUM_OBJECTS,
-        crop_fractions=(0.4, 0.3, 1, 0.8),
+        crop_fractions=[0, 0, 1, 1],
         excluded_labels=['airplane', 'fire', 'horse', 'bench', 'potted',
                          'bicycle', 'cow'],
 ):
@@ -220,10 +220,18 @@ def main():
                         help='last minutes to look')
     parser.add_argument('--negative-output-dir',
                         help='negative output image root directory')
+    parser.add_argument(
+        '--crop-box', type=float, nargs=4,
+        help='box coordinates (0-1) to crop (left, upper, right, lower)')
     args = parser.parse_args()
 
-    secim_filter(args.input_dir, args.output_dir, args.last_minutes,
-                 args.negative_output_dir)
+    secim_filter(
+        args.input_dir,
+        args.output_dir,
+        last_minutes=args.last_minutes,
+        neg_out_dir=args.negative_output_dir,
+        crop_fractions=args.crop_box,
+    )
 
 
 if __name__ == '__main__':
