@@ -48,11 +48,14 @@ def secim_filter(
 
     # Iterate over images
     for img_path in img_paths:
-        # Read and crop image
         orig_image = Image.open(img_path)
-        image = _crop_image(orig_image, crop_fractions)
+
+        # Filter out useless night images
+        if _is_night_image(orig_image):
+            continue
 
         # Transform image and infer
+        image = _crop_image(orig_image, crop_fractions)
         image = image.convert('RGB').resize(
             (input_width, input_height), Image.ANTIALIAS)
         start_time = time.monotonic()
@@ -122,6 +125,12 @@ def _load_labels(path):
             else:
                 labels[row_number] = pair[0].strip()
     return labels
+
+
+def _is_night_image(image, luminance_threshold=20):
+    gray_im = np.asarray(image.convert('L'))
+    mean_lum = gray_im.mean()
+    return True if mean_lum < luminance_threshold else False
 
 
 def _crop_image(image, crop_fractions):
