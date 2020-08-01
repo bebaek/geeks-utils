@@ -2,7 +2,6 @@ import argparse
 from datetime import datetime, timedelta
 import os
 from pathlib import Path
-import re
 import time
 
 import numpy as np
@@ -30,8 +29,8 @@ def secim_filter(
         threshold=THRESHOLD,
         min_num_objects=MIN_NUM_OBJECTS,
         crop_fractions=[0, 0, 1, 1],
-        excluded_labels=['airplane', 'fire', 'horse', 'bench', 'potted',
-                         'bicycle', 'cow'],
+        excluded_labels=['airplane', 'fire hydrant', 'horse', 'bench',
+                         'potted plant', 'bicycle', 'cow'],
 ):
     """Filter images and copy only useful ones."""
 
@@ -119,11 +118,12 @@ def _load_labels(path):
         labels = {}
         # Somehow labels or model seem to be shifted by 1
         for row_number, content in enumerate(lines[1:]):
-            pair = re.split(r'[:\s]+', content.strip(), maxsplit=1)
+            content = content.strip()
+            pair = content.split(maxsplit=1)
             if len(pair) == 2 and pair[0].strip().isdigit():
                 labels[int(pair[0])] = pair[1].strip()
             else:
-                labels[row_number] = pair[0].strip()
+                labels[row_number] = content
     return labels
 
 
@@ -217,7 +217,7 @@ def _draw_boxes(image, ymin, xmin, ymax, xmax, label='', score=0):
     draw.rectangle((xmin, ymin, xmax, ymax), outline=128, width=2)
 
     if label:
-        draw.text((xmin, ymin), f'{label} {round(score * 100)}%')
+        draw.text((xmin, ymax), f'{label} {round(score * 100)}%')
 
 
 def main():
