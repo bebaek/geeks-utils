@@ -47,7 +47,12 @@ def secim_filter(
 
     # Iterate over images
     for img_path in img_paths:
-        orig_image = Image.open(img_path)
+        try:
+            orig_image = Image.open(img_path)
+        except PIL.UnidentifiedImageError:
+            # FIXME: Log
+            # Probably partially uploaded?
+            pass
 
         # Filter out useless night images
         if _is_night_image(orig_image):
