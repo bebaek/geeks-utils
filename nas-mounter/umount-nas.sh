@@ -8,4 +8,11 @@ if [ "$#" -ne 1 ]; then
     exit
 fi
 
-gio mount -u smb://betelgeuse.local/"$1"
+if [[ -z "$MYNAS" ]]; then
+    echo MYNAS variable should be set.
+    exit
+fi
+
+gio mount -u "smb://$MYNAS/$1"
+
+echo Done.
