@@ -13,6 +13,8 @@ if [[ -z "$MYNAS" ]]; then
     exit
 fi
 
-gio mount -u "smb://$MYNAS/$1"
+user="$1"
+
+gio mount -u "smb://$MYNAS/$user"
 
 echo Done.

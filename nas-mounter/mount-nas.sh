@@ -3,8 +3,6 @@
 
 set -e
 
-mountpoint="/run/user/$(id -u $USER)/gvfs/smb-share:server=betelgeuse.local,share=$USER"
-
 if [ "$#" -ne 1 ]; then
     echo "Usage: $0 USERNAME"
     exit
@@ -15,7 +13,10 @@ if [[ -z "$MYNAS" ]]; then
     exit
 fi
 
-gio mount "smb://$MYNAS/$1"
+user="$1"
+mountpoint="/run/user/$(id -u $USER)/gvfs/smb-share:server=betelgeuse.local,share=$user"
+
+gio mount "smb://$MYNAS/$user"
 
 echo Checking mountpoint...
 ls -d "$mountpoint"
